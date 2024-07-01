@@ -1,5 +1,4 @@
 module MazeGeneration
-import("Crayons")
 include("node.jl")
 include("visualize.jl")
 include("solver.jl")
@@ -286,11 +285,4 @@ function animateMaze(height::Int, width::Int)
     return lab
 end
 
-lab1 = maze(5,5)
-println(lab1)
-println(lab1.start)
-println(lab1.goal)
-println(typeof(lab1.visual))
-println(lab1.path)
-println(lab1.short_path)
 end # module MazeGeneration
