@@ -2,7 +2,8 @@ mutable struct Node
     position::Tuple{Int, Int}
     connections::Vector{Bool}
     visited::Bool
-    Node(position::Tuple{Int,Int}) = new(position, Vector{Bool}([false, false, false, false]), false)
+    dir::Union{Int, Nothing}
+    Node(position::Tuple{Int,Int}) = new(position, Vector{Bool}([false, false, false, false]), false, nothing)
 end
 
 function Base.show(io::IO, n::Node)

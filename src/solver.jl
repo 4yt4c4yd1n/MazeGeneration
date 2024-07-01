@@ -6,7 +6,7 @@ function solve(maze::Maze)
     WEST = 2
     SOUTH = 3
     EAST = 4
-    
+    diffs = [(-1, 0), (0, -1), (1, 0), (0, 1)]
     #get the start and end position
     x = maze.start
     y = maze.goal
@@ -20,6 +20,7 @@ function solve(maze::Maze)
 
         #initialize the shortes path
         short_sol = Vector{Tuple{Node, Int}}()
+        circle = Vector{Tuple{Node, Int}}()
         path_set = Set{Node}()
 
         goal_y = maze.nodes[y[1],y[2]]
@@ -28,52 +29,36 @@ function solve(maze::Maze)
         width = size(maze.nodes, 2)
 
         #get the first direction
-        if x[1] == height #if we are at the bottom
-            if start_x.connections[3] #if there is no wall
-                direction = NORTH #we start walking upwards
-            elseif x[2] == width #if there is no wall to the right
-                direction = WEST #we start  walking leftwards
-            else
-                direction = EAST #we start walking rightwards
-            end 
-        elseif x[1] == 1 #if we are at the top
-            if start_x.connections[1]
-                direction = SOUTH
-            elseif x[2] == width
-                direction = WEST
-            else 
-                direction = EAST
-            end
-        else
-            if x[2] == width
-                direction = WEST
-            else
-                direction = EAST
-            end
-        end  
+        #if coming southwards, point must be (1, ...)
+        if x[1] == 1 && start_x.connections[1]
+            direction = SOUTH
+        #if coming northwards, point must be (height, ...)
+        elseif x[1] == height && start_x.connections[3]
+            direction = NORTH
+        #if coming eastwards, point must be (..., 1)
+        elseif x[2] == 1 && start_x.connections[2]
+            direction = EAST
+        #if coming westwards, point must be (..., width)
+        elseif x[2] == width && start_x.connections[4]
+            direction = WEST
+        end
 
         curr_node = start_x
 
         while curr_node != goal_y
-
             #to find out, where the right side is
-            right = direction - 1
-            right == 0 ? right = 4 : nothing
+            right = mod(direction + 2, 4)+1
 
             #to find out, where the left side is
-            left = direction + 1
-            left == 5 ? left = 1 : nothing
-
+            left = mod(direction, 4) + 1
             #opposite side, in order we have to go back
-            opp = direction + 2
-            opp > 4 ? opp -= 4 : nothing
+            opp = mod(direction + 1, 4) + 1
 
             #if there is no wall to the right
             if curr_node.connections[right]
                 #get the next node's position
                 i, j = curr_node.position[1], curr_node.position[2]
-                next_i = (1-(-1)^(right))÷2 * ((right)-2)
-                next_j = (1+(-1)^(right))÷2 * ((right)-3)
+                next_i, next_j = diffs[right]
 
                 #add the next node to the path
                 push!(solution, maze.nodes[i+next_i, j+next_j])
@@ -84,8 +69,7 @@ function solve(maze::Maze)
             #if we cannot tunr right, we try to go forward
             elseif curr_node.connections[direction]
                 i, j = curr_node.position[1], curr_node.position[2]
-                next_i = (1-(-1)^(direction))÷2 * ((direction)-2)
-                next_j = (1+(-1)^(direction))÷2 * ((direction)-3)
+                next_i, next_j = diffs[direction]
 
                 push!(solution, maze.nodes[i+next_i, j+next_j])
                 #in this case, the direction doesn't change
@@ -93,8 +77,7 @@ function solve(maze::Maze)
             #if we cannot go forward, we try to go to the left
             elseif curr_node.connections[left]
                 i, j = curr_node.position[1], curr_node.position[2]
-                next_i = (1-(-1)^(left))÷2 * ((left)-2)
-                next_j = (1+(-1)^(left))÷2 * ((left)-3)
+                next_i, next_j = diffs[left]
 
                 push!(solution, maze.nodes[i+next_i, j+next_j])
                 #direction changes, since we truned left
@@ -112,7 +95,10 @@ function solve(maze::Maze)
                     if short_sol[i][1] == curr_node
                         k = i
                         #delete the circle
-                        resize!(short_sol, k-1)
+                        while length(short_sol) > k
+                            push!(circle, pop!(short_sol))
+                        end 
+                        pop!(short_sol)
                         break
                     end 
                 end 
@@ -155,6 +141,17 @@ function solve(maze::Maze)
         #add the end node to the path
         push!(solution, goal_y)
         push!(short_sol, (goal_y, direction))
+
+        for node in short_sol
+            node[1].dir = node[2]
+        end
+        for node in circle
+            _dir = node[2] + 2
+            if _dir > 4
+                _dir -= 4
+            end
+            node[1].dir = _dir
+        end 
 
         return (solution, short_sol)
         end 

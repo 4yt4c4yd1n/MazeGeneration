@@ -2,9 +2,9 @@ module MazeGeneration
 include("node.jl")
 include("visualize.jl")
 include("solver.jl")
+using CSV
 
 function neighbors(node::Node, nodes::Matrix{Node})
-
     hood = []
     height, width = size(nodes, 1), size(nodes, 2)
     y, x = node.position[1], node.position[2]
@@ -134,10 +134,10 @@ function maze(height::Int, width::Int)
     start_y = rand(ys)
     start_x = rand(xs)
 
-    if rand(1:2) == 1
-        filter!(x->x!=start_x, xs)
-    else
-        filter!(x->x!=start_y, ys)
+    if rand(1:2) == 1 && length(xs) > 1
+        deleteat!(xs, findfirst(x->x==start_x, xs))
+    elseif length(ys) > 1
+        deleteat!(ys, findfirst(x->x==start_y, ys))
     end
 
     goal_y = rand(ys)
@@ -157,9 +157,7 @@ function maze(height::Int, width::Int)
 
     lab.start = (start_y, start_x)
     lab.goal = (goal_y, goal_x)
-
-    lab.path = solve(lab)[1]
-    lab.short_path = solve(lab)[2]
+    lab.path, lab.short_path = solve(lab)
     lab.visual = visualize(lab)
     return lab
 end
@@ -285,4 +283,19 @@ function animateMaze(height::Int, width::Int)
     return lab
 end
 
+function test1()
+    tests = Dict{Tuple{Int, Int}, Int}()
+    for i in 1:100
+        for k in 1:i*i*16
+            maze(i, i)
+            if haskey(tests, (i, i))
+                tests[(i, i)] += 1
+            else
+                tests[(i, i)] = 1
+            end
+        end
+    end
+    CSV.write("test.csv", tests)
+end
+println(maze(5, 5))
 end # module MazeGeneration

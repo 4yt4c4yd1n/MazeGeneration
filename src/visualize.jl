@@ -8,15 +8,17 @@ function visualize(lab::Maze)
     #if there is already a path found
     _path = lab.short_path
     _path_set = Set{Tuple{Int,Int}}()
-    _path2 = lab.path
-    _path2_set = Set{Tuple{Int,Int}}()
+ #   _path2 = lab.path
+ #   _path2_set = Set{Tuple{Int,Int}}()
+    _crayon1 = Crayon(foreground=:green, bold = true)
+    _crayon2 = Crayon(foreground=:red, bold = true)
 
-    #get the path's positions
+    #= get the path's positions
     if !isnothing(_path2)
            for node in _path2
                push!(_path2_set, node.position)
            end
-    end 
+    end  =#
     #get the positions of the shorter path
     if !isnothing(_path)
            for node in _path
@@ -25,9 +27,9 @@ function visualize(lab::Maze)
     end 
 
     #create the crayons           
-    _crayon2 = Crayon(foreground=:white, background=:red, bold=true)
-    _crayon1 = Crayon(foreground=:white, background=:green, bold=true)
-  #  directions = ["↑","←", "↓", "→"]
+  #  _crayon2 = Crayon(foreground=:white, background=:red, bold=true)
+  #  _crayon1 = Crayon(foreground=:white, background=:green, bold=true)
+    directions = ["↑","←", "↓", "→"]
   #   footprints = "👣"
    #  walking_person = "🚶"
     
@@ -49,20 +51,20 @@ function visualize(lab::Maze)
                 if !n.connections[2] #walls to the left
                     #nodes of the shorter part are colored green
                     if (i,j) in _path_set
-                        middle *= "|" * string((_crayon1("   ")))
+                        middle *= "| " * string((_crayon1(directions[n.dir]))) * " "
                     #nodes only of the longer path are colored red
-                    elseif (i,j) in _path2_set
-                        middle *= "|" * string((_crayon2("   ")))
+                    elseif !isnothing(n.dir)
+                        middle *= "| " * string((_crayon2(directions[n.dir]))) * " "
                     else
                         middle *= "|   "
                     end
                 else
                     if (i,j) in _path_set
-                        middle *= " " * string((_crayon1("   ")))
-                    elseif (i,j) in _path2_set
-                        middle *= " " *  string((_crayon2("   ")))
-                    else
-                    middle *= "    "  
+                        middle *= "  " * string((_crayon1(directions[n.dir]))) * " "
+                    elseif !isnothing(n.dir)
+                        middle *= "  " * string((_crayon2(directions[n.dir]))) * " "
+                    else 
+                        middle *= "    "  
                     end 
                 end
                 if !n.connections[4] #walls to the right
@@ -79,19 +81,19 @@ function visualize(lab::Maze)
                 end
                 if !n.connections[2] #left walls
                     if (i,j) in _path_set
-                        middle *= "|" * string((_crayon1("   ")))
-                    elseif (i,j) in _path2_set
-                        middle *= "|" * string((_crayon2("   ")))
-                    else
+                        middle *= "| " * string((_crayon1(directions[n.dir]))) * " "
+                    elseif !isnothing(n.dir)
+                        middle *= "| " * string((_crayon2(directions[n.dir]))) * " "
+                    else 
                         middle *= "|   "
                     end
                 else
                     if (i,j) in _path_set
-                        middle *= " " * string((_crayon1("   ")))
-                    elseif (i,j) in _path2_set
-                        middle *= " " * string((_crayon2("   ")))
-                    else
-                    middle *= "    "  
+                        middle *= "  " * string((_crayon1(directions[n.dir]))) * " "
+                    elseif !isnothing(n.dir)
+                        middle *= "  " * string((_crayon2(directions[n.dir]))) * " "
+                    else 
+                        middle *= "    "  
                     end
                 end 
             end
@@ -114,6 +116,7 @@ function visualize(lab::Maze)
     end
     #incluce bottom walls to the rest of the walls
     push!(walls, bottom)
+    
 
     #=
     if !isnothing(_path)
@@ -134,7 +137,8 @@ function visualize(lab::Maze)
             for n in eachindex(walls[a])
                 #if we are at our node, add the direction to the string
                 if n == b
-                    _new *= string((_crayon1(directions[c])))
+                 #   _new *= string((_crayon1(directions[c])))
+                    _new *= directions[c]
                 else
                     _new *= walls[a][n]
                 end 
@@ -143,6 +147,7 @@ function visualize(lab::Maze)
         end 
     end
     =#
+    
 
     
     
@@ -151,7 +156,7 @@ function visualize(lab::Maze)
     lab.visual = _visual
     return _visual
 end
-            
+                    
 #visualize the Maze by printing the walls                
 function Base.show(io::IO, lab::Maze)
     viz = lab.visual
@@ -160,5 +165,21 @@ function Base.show(io::IO, lab::Maze)
             print(io, join(viz.walls[i,n]))
         end
         println(io)
+    end
+    println(io, "Start: ", lab.start, ", Goal: ", lab.goal)
+
+    if !isnothing(lab.path)
+        print(io, "Right hand path: ")
+        for i in 1:(length(lab.path)-1)
+            print(io, lab.path[i].position, " ⇒ ")
+        end
+        println(io, lab.path[end].position)
+    end
+    if !isnothing(lab.short_path)
+        print(io, "Shortest path: ")
+        for i in 1:(length(lab.short_path)-1)
+            print(io, lab.short_path[i][1].position, " ⇒ ")
+        end
+        println(io, lab.short_path[end][1].position)
     end
 end
