@@ -1,29 +1,8 @@
 module MazeGeneration
+import("Crayons")
 include("node.jl")
-struct MazeViz
-    walls::Vector{String}
-end
-
-mutable struct Maze
-
-    path::Union{Vector{Node}, Nothing}
-    visual::Union{MazeViz, Nothing}
-    nodes::Matrix{Node}
-    start::Tuple{Int, Int}
-    goal::Tuple{Int, Int}
-
-    function Maze(height::Int, width::Int)
-        Lab = Matrix{Node}(undef, height, width)
-        for j in 1: height
-            for i in 1:width
-                
-                Lab[j, i] = Node((j, i))
-
-            end
-        end
-        return new(nothing, nothing, Lab)
-    end
-end
+include("visualize.jl")
+include("solver.jl")
 
 function neighbors(node::Node, nodes::Matrix{Node})
 
@@ -144,7 +123,7 @@ function maze(height::Int, width::Int)
     end
 
     # y and x are random but they cannot be completely random.
-    # They must be at edges. Therefore we constrict x to 2 options and let y be anything
+    # They must be at edges. Therefore we restrict one of them to 2 options
     if rand(1:2) == 1
         ys = collect(1:height)
         xs = [1, width]
@@ -156,13 +135,13 @@ function maze(height::Int, width::Int)
     start_y = rand(ys)
     start_x = rand(xs)
 
-    # To make the maze more pleasant looking, remove the used indices
-    filter!(x->x!=start_y, ys)
-    filter!(x->x!=start_x, xs)
-
+    if rand(1:2) == 1
+        filter!(x->x!=start_x, xs)
+    else
+        filter!(x->x!=start_y, ys)
+    end
 
     goal_y = rand(ys)
-    # only 1 option left for x
     goal_x = rand(xs)
 
     curr_node = lab.nodes[start_y, start_x]
@@ -176,84 +155,14 @@ function maze(height::Int, width::Int)
     n = neighbors(curr_node, lab.nodes)
     edges = findall(isnothing, n)
     curr_node.connections[rand(edges)] = true
-    
-    return lab
-end
 
-function visualize(lab::Maze)
-    height, width = size(lab.nodes, 1), size(lab.nodes, 2)
-    walls = []
-    
-    #iterate over nodes to find the walls
-    for i in 1:height
-        top = "+" #initialize upper walls with + for the first upper left corner
-        middle = "" #initialize vertical walls
-        for j in 1:width
-            n = lab.nodes[i,j]
-            
-            #finding walls for nodes in the last column at the right site
-            if j == width
-                if !n.connections[1] #upper walls
-                    top *= "---+"
-                else
-                    top *= "   +"
-                end
-                if !n.connections[2] #walls to the left
-                    middle *= "|   "
-                else
-                    middle *= "    "
-                end
-                if !n.connections[4] #walls to the right
-                    middle *= "|"
-                else
-                    middle *= " "
-                end
-            #finding walls for nodes NOT in the last column
-            else
-                if !n.connections[1] #upper walls
-                    top *= "---+"
-                else
-                    top *= "   +"
-                end
-                if !n.connections[2] #left walls
-                    middle *= "|   "
-                else
-                    middle *= "    "
-                end
-            end
-        end
-        #appending walls in the list
-        push!(walls, top)
-        push!(walls, middle)
-    end
-    
-    #initializing last line with + for the lower left corner
-    bottom = "+"
-    #finding walls to the bottom of the last line
-    for j in 1:width
-        ne = lab.nodes[1,j]
-        if !ne.connections[1]
-            bottom *= "---+"
-        else
-            bottom *= "   +"
-        end
-    end
-    #incluce bottom walls to the rest of the walls
-    push!(walls, bottom)
-    _visual = MazeViz(walls)
-    lab.visual = _visual
-    return _visual
-end
-            
-#visualize the Maze by printing the walls                
-function Base.show(io::IO, lab::Maze)
-    viz = visualize(lab)
-    for i in 1:size(viz.walls, 1)
-        for n in 1:size(viz.walls, 2)
-            print(io, join(viz.walls[i,n]))
-        end
-        println(io)
-    end
+    lab.start = (start_y, start_x)
+    lab.goal = (goal_y, goal_x)
+
+    lab.path = solve(lab)[1]
+    lab.short_path = solve(lab)[2]
+    lab.visual = visualize(lab)
+    return lab
 end
 
 function animateMaze(height::Int, width::Int)
@@ -272,6 +181,7 @@ function animateMaze(height::Int, width::Int)
     # while there are encountered unvisited nodes
     while !isempty(stack)
         print("\e[0;0H\e[2J")
+        lab.visual = visualize(lab)
         display(lab)
         sleep(0.1)
         
@@ -331,18 +241,26 @@ function animateMaze(height::Int, width::Int)
     ys = collect(1:height)
     xs = [1, width]
 
+    if rand(1:2) == 1
+        ys = collect(1:height)
+        xs = [1, width]
+    else
+        ys = [1, height]
+        xs = collect(1:width)
+    end
+
     start_y = rand(ys)
     start_x = rand(xs)
 
     # To make the maze more pleasant looking, remove the used indices
-    popat!(ys, start_y)
+    filter!(x->x!=start_y, ys)
     filter!(x->x!=start_x, xs)
 
 
     goal_y = rand(ys)
     # only 1 option left for x
-    goal_x = xs[1]
-
+    goal_x = rand(xs)
+    
     curr_node = lab.nodes[start_y, start_x]
     n = neighbors(curr_node, lab.nodes)
     # get all the indexes of edges(where the neighbor is marked as nothing)
@@ -350,12 +268,29 @@ function animateMaze(height::Int, width::Int)
     # select a random edge wall and remove it
     curr_node.connections[rand(edges)] = true
 
+    print("\e[0;0H\e[2J")
+    lab.visual = visualize(lab)
+    display(lab)
+    sleep(0.1)
+
     curr_node = lab.nodes[goal_y, goal_x]
     n = neighbors(curr_node, lab.nodes)
     edges = findall(isnothing, n)
     curr_node.connections[rand(edges)] = true
-    
+    print("\e[0;0H\e[2J")
+    lab.visual = visualize(lab)
+    display(lab)
+    sleep(0.1)
+    lab.start = (start_y, start_x)
+    lab.goal = (goal_y, goal_x)
     return lab
 end
-maze(5, 5)
+
+lab1 = maze(5,5)
+println(lab1)
+println(lab1.start)
+println(lab1.goal)
+println(typeof(lab1.visual))
+println(lab1.path)
+println(lab1.short_path)
 end # module MazeGeneration
