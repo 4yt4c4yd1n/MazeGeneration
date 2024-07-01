@@ -279,6 +279,11 @@ function animateMaze(height::Int, width::Int)
     sleep(0.1)
     lab.start = (start_y, start_x)
     lab.goal = (goal_y, goal_x)
+    lab.path, lab.short_path = solve(lab)
+    lab.visual = visualize(lab)
+    print("\e[0;0H\e[2J")
+    display(lab)
+    sleep(0.1)
     return lab
 end
 
