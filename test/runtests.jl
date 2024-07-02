@@ -12,7 +12,7 @@ function test1(verbose::Bool)
                     if verbose
                         print("Test 1 for maze", (j, i))
                     end
-                    MazeGeneration.maze(j, i)
+                    maze(j, i)
                 catch e
                     if verbose
                         println(string(_crayon2(" : ", string(e))))
@@ -43,7 +43,7 @@ function test2(verbose::Bool)
             if verbose
                 print("Test 2 for maze", toTest[i])
             end
-            MazeGeneration.maze(toTest[i][1], toTest[i][2])
+            maze(toTest[i][1], toTest[i][2])
         catch e
             if verbose
                 if isa(e, AssertionError)
