@@ -1,3 +1,5 @@
+include("node.jl")
+
 struct MazeViz
     walls::Vector{String}
 end
