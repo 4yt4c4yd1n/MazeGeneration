@@ -13,7 +13,7 @@ function test1(verbose::Bool)
                     if verbose
                         print("Test 1 for maze", (j, i))
                     end
-                    maze(j, i)
+                    MazeGeneration.maze(j, i)
                 catch e
                     if verbose
                         println(string(_crayon2(" : ", string(e))))
