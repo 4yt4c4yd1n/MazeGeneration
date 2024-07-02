@@ -325,5 +325,4 @@ function animateMaze(height::Int, width::Int)
     display(lab)
     return lab
 end
-println(maze(5, 5))
 end # module MazeGeneration
