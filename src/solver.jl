@@ -1,4 +1,3 @@
-include("node.jl")
 include("Maze.jl")
 
 function solve(maze::Maze)
