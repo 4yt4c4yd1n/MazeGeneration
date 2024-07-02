@@ -1,5 +1,6 @@
 using Crayons
-using MazeGeneration
+include("Maze.jl")
+
 function visualize(lab::Maze)
     height, width = size(lab.nodes, 1), size(lab.nodes, 2)
     walls = []
