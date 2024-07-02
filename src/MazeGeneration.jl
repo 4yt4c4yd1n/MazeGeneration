@@ -1,5 +1,4 @@
 module MazeGeneration
-include("node.jl")
 include("visualize.jl")
 include("solver.jl")
 
