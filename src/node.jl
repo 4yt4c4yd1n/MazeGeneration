@@ -3,7 +3,7 @@ mutable struct Node
     connections::Vector{Bool}
     visited::Bool
     dir::Union{Int, Nothing}
-    Node(position::Tuple{Int,Int}) = new(position, Vector{Bool}([false, false, false, false]), false, nothing)
+    Node(position) = new(position, Vector{Bool}([false, false, false, false]), false, nothing)
 end
 
 function Base.show(io::IO, n::Node)
