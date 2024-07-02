@@ -7,8 +7,8 @@ mutable struct Maze
     short_path::Union{Vector{Tuple{Node, Int}}, Nothing}
     visual::Union{MazeViz, Nothing}
     nodes::Matrix{Node}
-    start::Tuple{Int, Int}
-    goal::Tuple{Int, Int}
+    start::Union{Tuple{Int, Int}, Nothing}
+    goal::Union{Tuple{Int, Int}, Nothing}
 
     function Maze(height::Int, width::Int)
         Lab = Matrix{Node}(undef, height, width)

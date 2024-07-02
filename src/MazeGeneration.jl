@@ -2,6 +2,7 @@ module MazeGeneration
 include("node.jl")
 include("visualize.jl")
 include("solver.jl")
+include("tests.jl")
 
 function neighbors(node::Node, nodes::Matrix{Node})
     hood = []
@@ -54,6 +55,9 @@ end
 
 
 function maze(height::Int, width::Int)
+
+    @assert height >= 1 && width >= 1 "Invalid dimensions"
+
     NORTH = 1
     WEST = 2
     SOUTH = 3
@@ -156,7 +160,8 @@ function maze(height::Int, width::Int)
 
     lab.start = (start_y, start_x)
     lab.goal = (goal_y, goal_x)
-    lab.path, lab.short_path = solve(lab)
+
+    lab.path, lab.short_path = solve(lab)[1], solve(lab)[2]
     lab.visual = visualize(lab)
     return lab
 end
@@ -279,27 +284,48 @@ function animateMaze(height::Int, width::Int)
     sleep(0.1)
     lab.start = (start_y, start_x)
     lab.goal = (goal_y, goal_x)
-    lab.path, lab.short_path = solve(lab)
+
+    #animate the path
+    lab.path, lab.short_path, dirs = solve(lab)
+    #save the correct paths
+    _path, _short_path = lab.path, lab.short_path
+
+    if !isempty(_path)
+    for k in 1:length(_path)
+        #save the  final diriectioni
+        _dir = _path[k].dir
+        #get the current direction
+        _path[k].dir = dirs[k]
+
+        #ifdirection and node belong to shorter path
+        #we want to mark the node green
+        #to only see the current step, delete the other nodes from the paths
+        if (_path[k], _path[k].dir) in _short_path
+            lab.short_path = [(_path[k], _path[k].dir)] 
+            lab.path = nothing
+            print("\e[0;0H\e[2J")
+            lab.visual = visualize(lab)
+            display(lab)
+            sleep(0.25)
+        #wrong steps are marked red
+        else
+            lab.path = [_path[k]]
+            lab.short_path = nothing
+            print("\e[0;0H\e[2J")
+            lab.visual = visualize(lab)
+            display(lab)
+            sleep(0.25)
+        end 
+        #change back to final direction
+        _path[k].dir = _dir
+    end
+    end  
+
+    #rebuild the correct paths
+    lab.path, lab.short_path = _path, _short_path
     lab.visual = visualize(lab)
     print("\e[0;0H\e[2J")
     display(lab)
-    sleep(0.1)
     return lab
 end
-
-function test1()
-    tests = Dict{Tuple{Int, Int}, Int}()
-    for i in 1:100
-        for k in 1:i*i*16
-            maze(i, i)
-            if haskey(tests, (i, i))
-                tests[(i, i)] += 1
-            else
-                tests[(i, i)] = 1
-            end
-        end
-    end
-    CSV.write("test.csv", tests)
-end
-println(maze(5, 5))
 end # module MazeGeneration

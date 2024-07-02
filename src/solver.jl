@@ -14,18 +14,10 @@ function solve(maze::Maze)
 
     if !isnothing(x)&&!isnothing(y)
 
-        #initialize the path
         start_x = maze.nodes[x[1], x[2]]
-        solution = [start_x]
-
-        #initialize the shortes path
-        short_sol = Vector{Tuple{Node, Int}}()
-        circle = Vector{Tuple{Node, Int}}()
-        path_set = Set{Node}()
-
         goal_y = maze.nodes[y[1],y[2]]
 
-        height =size(maze.nodes, 1)
+        height = size(maze.nodes, 1)
         width = size(maze.nodes, 2)
 
         #get the first direction
@@ -43,7 +35,20 @@ function solve(maze::Maze)
             direction = WEST
         end
 
+        #initialize the path
+        solution = [start_x]
+
+        #initialize the shortes path
+        short_sol = Vector{Tuple{Node, Int}}()
+        #initialize the circles (unnecessary passed nodes)
+        circle = Vector{Tuple{Node, Int}}()
+        #we need a set to save passed nodes
+        path_set = Set{Node}()
+
         curr_node = start_x
+
+        #initialize a list of directions for the animation
+        directions = Vector{Int}()
 
         while curr_node != goal_y
             #to find out, where the right side is
@@ -66,6 +71,10 @@ function solve(maze::Maze)
                 #since we turned to the right
                 direction = right
 
+                #if we are really walking (not only turning around)
+                #add the direction to the list
+                push!(directions, direction)
+
             #if we cannot tunr right, we try to go forward
             elseif curr_node.connections[direction]
                 i, j = curr_node.position[1], curr_node.position[2]
@@ -73,6 +82,8 @@ function solve(maze::Maze)
 
                 push!(solution, maze.nodes[i+next_i, j+next_j])
                 #in this case, the direction doesn't change
+
+                push!(directions, direction)
 
             #if we cannot go forward, we try to go to the left
             elseif curr_node.connections[left]
@@ -82,11 +93,14 @@ function solve(maze::Maze)
                 push!(solution, maze.nodes[i+next_i, j+next_j])
                 #direction changes, since we truned left
                 direction = left
+
+                push!(directions, direction)
             
             #if nothign worked so far, we have to get back
             else 
                 direction = opp
             end
+
 
             #check, if there is a circle
             if curr_node in path_set
@@ -94,10 +108,13 @@ function solve(maze::Maze)
                 for i in 1:length(short_sol)
                     if short_sol[i][1] == curr_node
                         k = i
-                        #delete the circle
+                        #add the new circle to circles
+                        #delete the circe form the shortes path
                         while length(short_sol) > k
                             push!(circle, pop!(short_sol))
                         end 
+                        #since the revisited node is still part of the path
+                        #it doesn't belong to the circle vector
                         pop!(short_sol)
                         break
                     end 
@@ -112,6 +129,7 @@ function solve(maze::Maze)
             curr_node = solution[end]
 
         end 
+        
 
         #get the last direction
         if y[1] == height #if we are at the bottom
@@ -139,12 +157,18 @@ function solve(maze::Maze)
         end  
 
         #add the end node to the path
-        push!(solution, goal_y)
         push!(short_sol, (goal_y, direction))
+        #and the last directions to directons
+        #to make sure, directions and path have the same length
+        push!(directions, direction)
 
+        #change the direction for each node of the short path
         for node in short_sol
             node[1].dir = node[2]
         end
+        #change the direction to the unnecessary ones
+        #since we want them to end towards a wall
+        #we have to change them to opposite direction
         for node in circle
             _dir = node[2] + 2
             if _dir > 4
@@ -153,7 +177,11 @@ function solve(maze::Maze)
             node[1].dir = _dir
         end 
 
-        return (solution, short_sol)
-        end 
+        return (solution, short_sol, directions)
+
+    end
+        
+    #if the maze is empty, there is no path
+    return nothing
 end
 
