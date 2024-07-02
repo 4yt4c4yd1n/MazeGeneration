@@ -2,7 +2,6 @@ module MazeGeneration
 include("node.jl")
 include("visualize.jl")
 include("solver.jl")
-include("tests.jl")
 
 function neighbors(node::Node, nodes::Matrix{Node})
     hood = []
