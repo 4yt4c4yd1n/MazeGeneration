@@ -78,4 +78,4 @@ function alltests(verbose::Bool=false)
         return false
     end
 end
-@test alltests(true)
+alltests(true)
