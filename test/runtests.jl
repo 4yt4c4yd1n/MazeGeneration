@@ -1,5 +1,4 @@
 using Crayons
-using MazeGeneration
 
 _crayon1 = Crayon(foreground=:green, bold = true)
 _crayon2 = Crayon(foreground=:red, bold = true)
