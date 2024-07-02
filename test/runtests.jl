@@ -1,4 +1,5 @@
 using Crayons
+using MazeGeneration
 
 _crayon1 = Crayon(foreground=:green, bold = true)
 _crayon2 = Crayon(foreground=:red, bold = true)
@@ -12,7 +13,7 @@ function test1(verbose::Bool)
                     if verbose
                         print("Test 1 for maze", (j, i))
                     end
-                    maze(j, i)
+                    MazeGeneration.maze(j, i)
                 catch e
                     if verbose
                         println(string(_crayon2(" : ", string(e))))
@@ -43,7 +44,7 @@ function test2(verbose::Bool)
             if verbose
                 print("Test 2 for maze", toTest[i])
             end
-            maze(toTest[i][1], toTest[i][2])
+            MazeGeneration.maze(toTest[i][1], toTest[i][2])
         catch e
             if verbose
                 if isa(e, AssertionError)
