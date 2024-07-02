@@ -72,9 +72,10 @@ function alltests(verbose::Bool=false)
     println(results)
     if all(results)
         println(_crayon1("All tests passed succesfully!"))
+        return true
     else
         println(_crayon2("Test(s) failed: ", string(findall(!, results))))
+        return false
     end
 end
-test1(true)
-alltests()
+@test alltests(true)
