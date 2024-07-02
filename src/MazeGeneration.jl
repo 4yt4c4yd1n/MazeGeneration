@@ -1,6 +1,5 @@
 module MazeGeneration
-include("visualize.jl")
-include("solver.jl")
+include("functions.jl")
 
 function neighbors(node::Node, nodes::Matrix{Node})
     hood = []
@@ -326,4 +325,5 @@ function animateMaze(height::Int, width::Int)
     display(lab)
     return lab
 end
+println(maze(5, 5))
 end # module MazeGeneration
