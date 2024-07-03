@@ -1,6 +1,6 @@
 module MazeGeneration
 include("functions.jl")
-
+export maze, animateMaze
 function neighbors(node::Node, nodes::Matrix{Node})
     hood = []
     height, width = size(nodes, 1), size(nodes, 2)
