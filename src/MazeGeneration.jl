@@ -164,6 +164,9 @@ function maze(height::Int, width::Int)
 end
 
 function animateMaze(height::Int, width::Int)
+
+    @assert height >= 1 && width >= 1 "Invalid dimensions"
+    
     NORTH = 1
     WEST = 2
     SOUTH = 3
@@ -251,8 +254,11 @@ function animateMaze(height::Int, width::Int)
     start_x = rand(xs)
 
     # To make the maze more pleasant looking, remove the used indices
-    filter!(x->x!=start_y, ys)
-    filter!(x->x!=start_x, xs)
+    if rand(1:2) == 1 && length(xs) > 1
+        deleteat!(xs, findfirst(x->x==start_x, xs))
+    elseif length(ys) > 1
+        deleteat!(ys, findfirst(x->x==start_y, ys))
+    end
 
 
     goal_y = rand(ys)
