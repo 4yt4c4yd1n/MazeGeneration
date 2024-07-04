@@ -48,7 +48,7 @@ function maze(height::Int, width::Int)
             curr_node.visited = true
         end
 
-        _neighbors = neighbors(curr_node, lab.nodes)
+        _neighbors = neighbors(curr_node)
 
         next = randUnvisitedDirection(_neighbors)
 
@@ -116,14 +116,14 @@ function maze(height::Int, width::Int)
     goal_x = rand(xs)
 
     curr_node = lab.nodes[start_y, start_x]
-    n = neighbors(curr_node, lab.nodes)
+    n = neighbors(curr_node)
     # get all the indexes of edges(where the neighbor is marked as nothing)
     edges = findall(isnothing, n)
     # select a random edge wall and remove it
     curr_node.connections[rand(edges)] = true
 
     curr_node = lab.nodes[goal_y, goal_x]
-    n = neighbors(curr_node, lab.nodes)
+    n = neighbors(curr_node)
     edges = findall(isnothing, n)
     curr_node.connections[rand(edges)] = true
 
@@ -238,7 +238,7 @@ function animateMaze(height::Int, width::Int)
     goal_x = rand(xs)
     
     curr_node = lab.nodes[start_y, start_x]
-    n = neighbors(curr_node, lab.nodes)
+    n = neighbors(curr_node)
     # get all the indexes of edges(where the neighbor is marked as nothing)
     edges = findall(isnothing, n)
     # select a random edge wall and remove it
@@ -250,7 +250,7 @@ function animateMaze(height::Int, width::Int)
     sleep(0.1)
 
     curr_node = lab.nodes[goal_y, goal_x]
-    n = neighbors(curr_node, lab.nodes)
+    n = neighbors(curr_node)
     edges = findall(isnothing, n)
     curr_node.connections[rand(edges)] = true
     print("\e[0;0H\e[2J")
