@@ -1,34 +1,6 @@
 module MazeGeneration
 include("functions.jl")
 export maze, animateMaze
-function neighbors(node::Node, nodes::Matrix{Node})
-    hood = []
-    height, width = size(nodes, 1), size(nodes, 2)
-    y, x = node.position[1], node.position[2]
-
-    if y-1 >= 1
-        push!(hood, nodes[y-1, x])
-    else
-        push!(hood, nothing)
-    end
-    if x-1 >= 1
-        push!(hood, nodes[y, x-1])
-    else
-        push!(hood, nothing)
-    end
-    if y+1 <= height
-        push!(hood, nodes[y+1, x])
-    else
-        push!(hood, nothing)
-    end
-    if x+1 <= width
-        push!(hood, nodes[y, x+1])
-    else
-        push!(hood, nothing)
-    end
-
-    return hood
-end
 
 function randUnvisitedDirection(nodes::Vector)
     # get a list of unvisited nodes
@@ -158,7 +130,7 @@ function maze(height::Int, width::Int)
     lab.start = (start_y, start_x)
     lab.goal = (goal_y, goal_x)
 
-    lab.path, lab.short_path = solve(lab)[1], solve(lab)[2]
+    lab.path, lab.short_path = solve(lab)
     lab.visual = visualize(lab)
     return lab
 end

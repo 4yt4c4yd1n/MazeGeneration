@@ -3,8 +3,10 @@ mutable struct Node
     connections::Vector{Bool}
     visited::Bool
     dir::Union{Int, Nothing}
-    Node(position::Tuple{Int,Int}) = new(position, Vector{Bool}([false, false, false, false]), false, nothing)
+    neighbors::Vector{Union{Node, Nothing}}
+    Node(position::Tuple{Int,Int}) = new(position, Vector{Bool}([false, false, false, false]), false, nothing, Vector{Union{Node, Nothing}}([nothing, nothing, nothing, nothing]))
 end
+neighbors(n::Node) = n.neighbors
 
 function Base.show(io::IO, n::Node)
     if n.visited
@@ -34,6 +36,35 @@ function Base.show(io::IO, n::Node)
     end
 end
 
+function neighbors(node::Node, nodes::Matrix{Node})
+    hood = []
+    height, width = size(nodes, 1), size(nodes, 2)
+    y, x = node.position[1], node.position[2]
+
+    if y-1 >= 1
+        push!(hood, nodes[y-1, x])
+    else
+        push!(hood, nothing)
+    end
+    if x-1 >= 1
+        push!(hood, nodes[y, x-1])
+    else
+        push!(hood, nothing)
+    end
+    if y+1 <= height
+        push!(hood, nodes[y+1, x])
+    else
+        push!(hood, nothing)
+    end
+    if x+1 <= width
+        push!(hood, nodes[y, x+1])
+    else
+        push!(hood, nothing)
+    end
+
+    return hood
+end
+
 struct MazeViz
     walls::Vector{String}
 end
@@ -55,9 +86,17 @@ mutable struct Maze
 
             end
         end
+        for j in 1: height
+            for i in 1:width
+                
+                Lab[j, i].neighbors = neighbors(Lab[j, i], Lab)
+
+            end
+        end
         return new(nothing, nothing, nothing, Lab)
     end
 end
+
 
 function Base.show(io::IO, lab::Maze)
     viz = lab.visual
